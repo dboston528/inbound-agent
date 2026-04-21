@@ -1,0 +1,25 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  name             String?
+  email            String
+  company          String?
+  teamSize         String?
+  timeline         String?
+  department       String?
+  tools            String?
+  useCase          String?
+  leadScore        Int
+  summary          String
+  rawConversation  Json
+}
