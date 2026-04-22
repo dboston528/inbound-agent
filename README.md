@@ -1,4 +1,4 @@
-# Agent Strategy Assistant
+# Inbound Sales Agent Strategy Assistant
 
 An inbound sales agent that qualifies automation prospects, captures structured requirements, scores leads deterministically, and persists them to Postgres.
 
