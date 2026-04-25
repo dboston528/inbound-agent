@@ -21,7 +21,7 @@ export default function Home() {
           marginBottom: "0.5rem",
         }}
       >
-        Agent Strategy Assistant
+        ACME Media, Inc. 
       </h1>
       <p
         style={{
@@ -29,7 +29,7 @@ export default function Home() {
           marginBottom: "2rem",
         }}
       >
-        Explore AI agent automation for your team
+        Inbound Sales Agent for Automation Strategy Qualification
       </p>
       <ChatWidget />
     </main>

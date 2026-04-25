@@ -24,11 +24,18 @@ export function ChatWidget() {
   const [bookingLink, setBookingLink] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const sessionId = useRef(getSessionId());
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (!isComplete) {
+      inputRef.current?.focus();
+    }
+  }, [loading, isComplete]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,6 +43,7 @@ export function ChatWidget() {
 
     const userMessage = input.trim();
     setInput("");
+    requestAnimationFrame(() => inputRef.current?.focus());
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
 
@@ -167,11 +175,13 @@ export function ChatWidget() {
         >
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              disabled={loading}
+              readOnly={loading}
+              aria-disabled={loading}
               style={{
                 flex: 1,
                 padding: "0.75rem 1rem",

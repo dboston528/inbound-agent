@@ -1,0 +1,14 @@
+services:
+  app:
+    command: npm run dev -- -H 0.0.0.0 -p 3000
+    environment:
+      - NODE_ENV=development
+      # File watching on macOS + Docker can be unreliable without polling.
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      # Mount local source into the container for live reload.
+      - .:/app
+      # Prevent the bind-mount from hiding container-installed deps/build output.
+      - /app/node_modules
+      - /app/.next

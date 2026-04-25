@@ -4,6 +4,7 @@ RUN apk add --no-cache openssl
 FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
+COPY prisma ./prisma
 RUN npm ci
 
 FROM base AS builder
