@@ -9,6 +9,7 @@ export interface CreateLeadInput {
   department?: string;
   tools?: string;
   useCase?: string;
+  budget?: string;
   leadScore: number;
   summary: string;
   rawConversation: Record<string, unknown>[];

@@ -198,6 +198,7 @@ company: ${fields.company ?? "N/A"}`;
       department: fields.department ?? undefined,
       tools: fields.tools ?? undefined,
       useCase: fields.useCase ?? undefined,
+      budget: fields.budget ?? undefined,
       leadScore: score,
       summary,
       rawConversation: rawConv,

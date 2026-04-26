@@ -19,6 +19,7 @@ model Lead {
   department       String?
   tools            String?
   useCase          String?
+  budget           String?
   leadScore        Int
   summary          String
   rawConversation  Json
