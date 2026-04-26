@@ -37,9 +37,13 @@ export function calculateLeadScore(fields: SessionFields): number {
     score += 2;
   }
 
-  const useCaseLower = (fields.useCase ?? "").toLowerCase();
-  const hasBudgetKeyword = BUDGET_KEYWORDS.some((k) => useCaseLower.includes(k));
-  if (hasBudgetKeyword) score += 2;
+  if (fields.budget && fields.budget !== "BUDGET_UNKNOWN") {
+    score += 2;
+  } else {
+    const useCaseLower = (fields.useCase ?? "").toLowerCase();
+    const hasBudgetKeyword = BUDGET_KEYWORDS.some((k) => useCaseLower.includes(k));
+    if (hasBudgetKeyword) score += 2;
+  }
 
   return score;
 }

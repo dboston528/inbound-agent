@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ExtractedFields, SessionFields } from "./types";
-import { TEAM_SIZE_VALUES, TIMELINE_VALUES } from "./types";
+import { BUDGET_VALUES, TEAM_SIZE_VALUES, TIMELINE_VALUES } from "./types";
 import { isValidEmail } from "@/lib/validation/email";
 
 const ExtractionSchema = z.object({
@@ -9,6 +9,7 @@ const ExtractionSchema = z.object({
   timeline: z.enum(TIMELINE_VALUES as unknown as [string, ...string[]]).optional(),
   tools: z.string().optional(),
   department: z.string().optional(),
+  budget: z.enum(BUDGET_VALUES as unknown as [string, ...string[]]).optional(),
   email: z.string().optional(),
   name: z.string().optional(),
   company: z.string().optional(),

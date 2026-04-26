@@ -11,8 +11,18 @@ export const TIMELINE_VALUES = [
   "ASAP",
 ] as const;
 
+export const BUDGET_VALUES = [
+  "BUDGET_UNDER_25K",
+  "BUDGET_25_50K",
+  "BUDGET_50_100K",
+  "BUDGET_100_250K",
+  "BUDGET_250K_PLUS",
+  "BUDGET_UNKNOWN",
+] as const;
+
 export type TeamSize = (typeof TEAM_SIZE_VALUES)[number];
 export type Timeline = (typeof TIMELINE_VALUES)[number];
+export type Budget = (typeof BUDGET_VALUES)[number];
 
 export interface ExtractedFields {
   useCase?: string;
@@ -20,6 +30,7 @@ export interface ExtractedFields {
   timeline?: string;
   tools?: string;
   department?: string;
+  budget?: string;
   email?: string;
   name?: string;
   company?: string;
@@ -31,6 +42,7 @@ export interface SessionFields {
   timeline?: string | null;
   tools?: string | null;
   department?: string | null;
+  budget?: string | null;
   email?: string | null;
   name?: string | null;
   company?: string | null;

@@ -7,5 +7,6 @@ teamSize: ${fields.teamSize ?? "N/A"}
 timeline: ${fields.timeline ?? "N/A"}
 tools: ${fields.tools ?? "N/A"}
 department: ${fields.department ?? "N/A"}
+budget: ${fields.budget ?? "N/A"}
 company: ${fields.company ?? "N/A"}`;
 }
