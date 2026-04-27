@@ -11,7 +11,7 @@ const ExtractionSchema = z.object({
   timeline: z.string().optional(),
   tools: z.string().optional(),
   department: z.string().optional(),
-  budget: z.enum(BUDGET_VALUES as unknown as [string, ...string[]]).optional(),
+  budget: z.string().optional(),
   email: z.string().optional(),
   name: z.string().optional(),
   company: z.string().optional(),
@@ -61,10 +61,15 @@ function normalizeExtractedFields(extracted: ExtractedFields): ExtractedFields {
     normalized.timeline = normalizeTimeline(extracted.timeline) ?? extracted.timeline;
   }
 
+  if (typeof extracted.budget === "string") {
+    normalized.budget = normalizeBudget(extracted.budget) ?? extracted.budget;
+  }
+
   // If timeline/teamSize didn't normalize to a known enum, omit them
   // so we don't store unusable values that block completion.
   if (!isTeamSizeEnum(normalized.teamSize)) delete normalized.teamSize;
   if (!isTimelineEnum(normalized.timeline)) delete normalized.timeline;
+  if (!isBudgetEnum(normalized.budget)) delete normalized.budget;
 
   return normalized;
 }
@@ -160,4 +165,62 @@ function isTeamSizeEnum(value: unknown): value is (typeof TEAM_SIZE_VALUES)[numb
 
 function isTimelineEnum(value: unknown): value is (typeof TIMELINE_VALUES)[number] {
   return typeof value === "string" && (TIMELINE_VALUES as readonly string[]).includes(value);
+}
+
+function normalizeBudget(input: string): (typeof BUDGET_VALUES)[number] | null {
+  const text = input.toLowerCase().trim();
+
+  if (isBudgetEnum(input)) return input;
+
+  // Explicit "unknown" style answers
+  if (
+    text.includes("unknown") ||
+    text.includes("not sure") ||
+    text.includes("tbd") ||
+    text.includes("n/a") ||
+    text.includes("no budget")
+  ) {
+    return "BUDGET_UNKNOWN";
+  }
+
+  // Prefer numeric parsing when possible, e.g. "$50K", "50,000", "50k range"
+  const amount = parseMoneyToDollars(text);
+  if (amount != null) {
+    if (amount < 25_000) return "BUDGET_UNDER_25K";
+    if (amount < 50_000) return "BUDGET_25_50K";
+    if (amount < 100_000) return "BUDGET_50_100K";
+    if (amount < 250_000) return "BUDGET_100_250K";
+    return "BUDGET_250K_PLUS";
+  }
+
+  // If they mention approval/allocated/spend but no number, keep as unknown
+  if (
+    text.includes("approved") ||
+    text.includes("allocated") ||
+    text.includes("budget") ||
+    text.includes("spend")
+  ) {
+    return "BUDGET_UNKNOWN";
+  }
+
+  return null;
+}
+
+function parseMoneyToDollars(text: string): number | null {
+  // Matches: $50k, 50k, 50,000, 50000, $250K+
+  const match = text.match(/\$?\s*(\d{1,3}(?:,\d{3})+|\d{1,7})\s*([kKmM])?/);
+  if (!match) return null;
+
+  const raw = match[1].replace(/,/g, "");
+  const n = Number(raw);
+  if (Number.isNaN(n)) return null;
+
+  const suffix = match[2]?.toLowerCase();
+  if (suffix === "k") return n * 1_000;
+  if (suffix === "m") return n * 1_000_000;
+  return n;
+}
+
+function isBudgetEnum(value: unknown): value is (typeof BUDGET_VALUES)[number] {
+  return typeof value === "string" && (BUDGET_VALUES as readonly string[]).includes(value);
 }
