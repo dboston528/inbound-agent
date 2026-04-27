@@ -3,6 +3,7 @@ export interface SlackNotificationPayload {
   company: string;
   score: number;
   summary: string;
+  scoreSummary?: string;
 }
 
 export async function sendSlackNotification(
@@ -22,7 +23,7 @@ export async function sendSlackNotification(
 Email: ${payload.email}
 Company: ${payload.company}
 Score: ${payload.score}
-Summary: ${payload.summary}`,
+Summary: ${payload.summary}${payload.scoreSummary ? `\n\n${payload.scoreSummary}` : ""}`,
     }),
   });
 

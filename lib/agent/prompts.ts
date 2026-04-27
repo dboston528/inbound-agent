@@ -149,7 +149,11 @@ WHAT YOU NEVER DO
 `;
 
 export function buildSystemPrompt(): string {
-  return SYSTEM_PROMPT;
+  const bookingLink = process.env.BOOKING_LINK?.trim();
+  return SYSTEM_PROMPT.replace(
+    "{BOOKING_LINK}",
+    bookingLink && bookingLink.length > 0 ? bookingLink : "[booking link not configured]"
+  );
 }
 
 export function buildExtractionPrompt(fields: SessionFields): string {

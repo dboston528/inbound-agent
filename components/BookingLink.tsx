@@ -7,10 +7,9 @@ interface BookingLinkProps {
 
 export function BookingLink({ href, children }: BookingLinkProps) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      type="button"
+      onClick={() => window.open(href, "_blank", "noopener,noreferrer")}
       style={{
         display: "inline-block",
         marginTop: "0.5rem",
@@ -20,9 +19,11 @@ export function BookingLink({ href, children }: BookingLinkProps) {
         borderRadius: "0.5rem",
         fontWeight: 600,
         textDecoration: "none",
+        border: "none",
+        cursor: "pointer",
       }}
     >
       {children ?? "Book a Strategy Call"}
-    </a>
+    </button>
   );
 }

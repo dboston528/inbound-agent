@@ -127,7 +127,7 @@ export function ChatWidget() {
             marginTop: "0.25rem",
           }}
         >
-          We&apos;ll help you explore automation options
+          We'll help you explore partnership options
         </p>
       </div>
 

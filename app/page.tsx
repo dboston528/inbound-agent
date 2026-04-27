@@ -29,7 +29,7 @@ export default function Home() {
           marginBottom: "2rem",
         }}
       >
-        Inbound Sales Agent for Automation Strategy Qualification
+        Inbound Sales Agent for Partnership Opportunities
       </p>
       <ChatWidget />
     </main>

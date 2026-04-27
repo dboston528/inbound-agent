@@ -3,7 +3,7 @@ import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages
 import { StateGraph, Annotation } from "@langchain/langgraph";
 import { parseExtraction, mergeFields, validateExtractedEmail } from "./extraction";
 import { isLeadComplete } from "./completion";
-import { calculateLeadScore, isHighIntent } from "./scoring";
+import { calculateLeadScore, formatScoreSummary, isHighIntent, scoreLead } from "./scoring";
 import {
   buildSystemPrompt,
   buildExtractionPrompt,
@@ -212,11 +212,14 @@ company: ${fields.company ?? "N/A"}`;
   }
 
   try {
+    const breakdown = scoreLead(fields);
+    const scoreSummary = formatScoreSummary(fields, breakdown);
     await sendSlackNotification({
       email: fields.email!,
       company: fields.company ?? "N/A",
       score,
       summary,
+      scoreSummary,
     });
   } catch (err) {
     console.error("Notification error:", err);
