@@ -6,13 +6,15 @@ import { MessageBubble } from "./MessageBubble";
 import { BookingLink } from "./BookingLink";
 
 const SESSION_KEY = "agent_session_id";
+const COMPLETE_KEY = "agent_session_complete";
+const BOOKING_LINK_KEY = "agent_booking_link";
 
-function getSessionId(): string {
+function getOrCreateSessionId(): string {
   if (typeof window === "undefined") return uuidv4();
-  let id = localStorage.getItem(SESSION_KEY);
+  let id = sessionStorage.getItem(SESSION_KEY);
   if (!id) {
     id = uuidv4();
-    localStorage.setItem(SESSION_KEY, id);
+    sessionStorage.setItem(SESSION_KEY, id);
   }
   return id;
 }
@@ -25,17 +27,44 @@ export function ChatWidget() {
   const [isComplete, setIsComplete] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const sessionId = useRef(getSessionId());
+  const [sessionId, setSessionId] = useState(() => getOrCreateSessionId());
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const complete = sessionStorage.getItem(COMPLETE_KEY) === "true";
+    if (complete) setIsComplete(true);
+
+    const storedBookingLink = sessionStorage.getItem(BOOKING_LINK_KEY);
+    if (storedBookingLink) setBookingLink(storedBookingLink);
+  }, []);
+
+  useEffect(() => {
     if (!isComplete) {
       inputRef.current?.focus();
     }
   }, [loading, isComplete]);
+
+  function clearSession() {
+    if (typeof window === "undefined") return;
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(COMPLETE_KEY);
+    sessionStorage.removeItem(BOOKING_LINK_KEY);
+
+    setMessages([]);
+    setInput("");
+    setBookingLink(null);
+    setIsComplete(false);
+
+    const nextId = uuidv4();
+    sessionStorage.setItem(SESSION_KEY, nextId);
+    setSessionId(nextId);
+
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +81,7 @@ export function ChatWidget() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: sessionId.current,
+          sessionId,
           message: userMessage,
         }),
       });
@@ -77,8 +106,14 @@ export function ChatWidget() {
 
       if (data.isComplete) {
         setIsComplete(true);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(COMPLETE_KEY, "true");
+        }
         if (data.bookingLink) {
           setBookingLink(data.bookingLink);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(BOOKING_LINK_KEY, data.bookingLink);
+          }
         }
       }
     } catch {
@@ -209,6 +244,33 @@ export function ChatWidget() {
             </button>
           </div>
         </form>
+      )}
+
+      {isComplete && (
+        <div
+          style={{
+            padding: "1rem",
+            borderTop: "1px solid var(--chat-border)",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            type="button"
+            onClick={clearSession}
+            style={{
+              padding: "0.75rem 1rem",
+              borderRadius: "0.5rem",
+              background: "transparent",
+              color: "var(--chat-text)",
+              border: "1px solid var(--chat-border)",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Clear session
+          </button>
+        </div>
       )}
     </div>
   );
