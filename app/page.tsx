@@ -14,23 +14,6 @@ export default function Home() {
         padding: "2rem",
       }}
     >
-      <h1
-        style={{
-          fontSize: "2rem",
-          fontWeight: 700,
-          marginBottom: "0.5rem",
-        }}
-      >
-        ACME Media, Inc. 
-      </h1>
-      <p
-        style={{
-          color: "var(--chat-muted)",
-          marginBottom: "2rem",
-        }}
-      >
-        Inbound Sales Agent for Partnership Opportunities
-      </p>
       <ChatWidget />
     </main>
   );

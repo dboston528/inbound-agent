@@ -1,11 +1,11 @@
 :root {
   --chat-bg: #0f172a;
-  --chat-surface: #1e293b;
+  --chat-surface: #1A1C2E;
   --chat-border: #334155;
   --chat-text: #f1f5f9;
   --chat-muted: #94a3b8;
   --accent: #4ABE9C;
-  --accent-hover: #7dd3fc;
+  --accent-hover: #4ABE9C;
 }
 
 * {
