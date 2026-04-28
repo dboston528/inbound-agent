@@ -46,4 +46,10 @@ describe("Multi-field extraction", () => {
     expect(extracted?.teamSize).toBe("TEAM_10_50");
     expect(extracted?.timeline).toBe("ASAP");
   });
+
+  it("ignores extra text around JSON", () => {
+    const content = `Sure — here you go:\n{"useCase":"newsletter sponsorship"}\nThanks!`;
+    const extracted = parseExtraction(content.match(/\{[\s\S]*?\}/)?.[0] ?? "");
+    expect(extracted?.useCase).toBe("newsletter sponsorship");
+  });
 });

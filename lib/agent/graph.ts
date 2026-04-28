@@ -15,6 +15,28 @@ import type { SessionFields, ConversationMessage } from "./types";
 import { createLead } from "@/lib/db/leadRepository";
 import { sendSlackNotification } from "@/lib/notifications/slack";
 
+const AGENT_DEBUG =
+  process.env.AGENT_DEBUG === "true" || process.env.DEBUG_AGENT === "true";
+
+function debugLog(...args: unknown[]) {
+  if (!AGENT_DEBUG) return;
+  console.log("[agent]", ...args);
+}
+
+function parseExtractionFromModelOutput(content: string) {
+  const trimmed = content.trim();
+  const direct = parseExtraction(trimmed);
+  if (direct) return { extracted: direct, jsonCandidate: trimmed };
+
+  const candidates = trimmed.match(/\{[\s\S]*?\}/g) ?? [];
+  for (const candidate of candidates) {
+    const parsed = parseExtraction(candidate);
+    if (parsed) return { extracted: parsed, jsonCandidate: candidate };
+  }
+
+  return { extracted: null as ReturnType<typeof parseExtraction>, jsonCandidate: undefined as string | undefined };
+}
+
 const AgentStateAnnotation = Annotation.Root({
   sessionId: Annotation<string>,
   fields: Annotation<SessionFields>({
@@ -75,10 +97,19 @@ async function extractFieldsNode(state: AgentState): Promise<Partial<AgentState>
       new HumanMessage(lastUserMessage),
     ]);
     const content = typeof response.content === "string" ? response.content : "";
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      extracted = parseExtraction(jsonMatch[0]);
-    }
+    const { extracted: parsed, jsonCandidate } = parseExtractionFromModelOutput(content);
+    debugLog("extract.start", {
+      sessionId: state.sessionId,
+      lastUserMessage,
+      priorFields: fields,
+      llmContent: content,
+      jsonCandidate,
+    });
+    extracted = parsed;
+    debugLog("extract.parsed", {
+      sessionId: state.sessionId,
+      extracted,
+    });
   } catch (err) {
     console.error("Extraction error:", err);
     return {
@@ -90,6 +121,10 @@ async function extractFieldsNode(state: AgentState): Promise<Partial<AgentState>
   let mergedFields = fields;
   if (extracted) {
     if (extracted.email && !validateExtractedEmail(extracted.email)) {
+      debugLog("extract.invalid_email", {
+        sessionId: state.sessionId,
+        extractedEmail: extracted.email,
+      });
       return {
         reply:
           "That email doesn't look valid. Could you share a valid email address so we can follow up?",
@@ -97,18 +132,30 @@ async function extractFieldsNode(state: AgentState): Promise<Partial<AgentState>
     }
     mergedFields = mergeFields(fields, extracted);
   }
+  debugLog("extract.merged", {
+    sessionId: state.sessionId,
+    mergedFields,
+  });
 
   const complete = isLeadComplete(mergedFields);
+  debugLog("completion.checked", {
+    sessionId: state.sessionId,
+    complete,
+  });
   if (complete) {
     return { fields: mergedFields, isComplete: true };
   }
 
   const nextField = getNextFieldToAsk(mergedFields);
+  debugLog("nextField.selected", {
+    sessionId: state.sessionId,
+    nextField,
+  });
   if (!nextField) {
     return { fields: mergedFields };
   }
 
-  const systemPrompt = buildSystemPrompt();
+  const systemPrompt = buildSystemPrompt({ includeBookingLink: false });
   const questionPrompt = buildQuestionPrompt(
     mergedFields,
     nextField,
